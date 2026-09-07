@@ -83,7 +83,10 @@ function persist(rides: readonly Ride[]): void {
 }
 
 export function createCatalog(): CatalogState {
-  const rides = [...analyseSamples(), ...loadPersisted()];
+  // Uploads lead, newest first, then the curated rides. Someone who has added
+  // their own ride came here for that one, so it should be the tab already
+  // open — with the curated peaks sitting right beside it to compare against.
+  const rides = [...loadPersisted(), ...analyseSamples()];
   return {
     rides,
     rideIndex: 0,
@@ -92,10 +95,13 @@ export function createCatalog(): CatalogState {
   };
 }
 
-/** Append an uploaded ride and select it. Samples are never replaced. */
+/**
+ * Add an uploaded ride at the front of the list and select it.
+ * Samples are never replaced, only pushed along.
+ */
 export function addRide(state: CatalogState, ride: Ride): void {
-  state.rides.push(ride);
-  state.rideIndex = state.rides.length - 1;
+  state.rides.unshift(ride);
+  state.rideIndex = 0;
   state.climbIndex = ride.mainClimb;
   persist(state.rides);
 }

@@ -42,9 +42,10 @@ holding, and say what changed.
 OAuth, no Strava API terms, and no personal data leaving the machine. Strava
 OAuth was considered and deferred; it needs a server for the token exchange.
 
-**Uploads append, they do not replace.** The point is comparing your Kojšovka
-against the curated one. `addRide` in `apps/web/src/state/catalog.ts` is where
-that lives.
+**Uploads are added, never replacing the curated rides**, and they lead the
+list, newest first. The point is comparing your Kojšovka against the curated
+one, so both stay on screen. `addRide` and `createCatalog` in
+`apps/web/src/state/catalog.ts` are where the ordering lives.
 
 **Hosting is GitHub Pages.** `.github/workflows/deploy.yml` builds and
 publishes `dist/` on push to `main`.
