@@ -55,7 +55,11 @@ an uploaded file:
   the slot length folds into the previous slot.
 - **Stops** — any gap over 10 minutes in the elapsed-time stream.
 - **Profile** — the ride is drawn as an SVG area, clipped, with one coloured
-  rectangle painted per slot inside the clip.
+  rectangle painted per slot inside the clip. Heart rate is overlaid as a red
+  line on its own right-hand axis, drawn with a paper-coloured halo so it stays
+  legible over the darker gradient bands, and broken wherever the strap dropped
+  out rather than bridged across a gap that was never recorded. Rides without
+  heart rate lose the line, the axis and the bpm column entirely.
 
 ### Two things happen in a deliberate order
 

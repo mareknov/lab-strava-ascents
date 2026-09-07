@@ -1,11 +1,16 @@
-import { altAt, colourFor, splitIntoSlots, type Climb, type Ride } from '@ascents/domain';
+import { altAt, colourFor, hrAt, splitIntoSlots, type Climb, type Ride } from '@ascents/domain';
 
 const W = 1000;
 const H = 362;
 const L = 50;
-const R = 14;
+/** Right margin. Widened only when a heart-rate axis needs labelling. */
+const R_PLAIN = 14;
+const R_WITH_HR = 46;
 const T = 48;
 const B = 30;
+
+const HR_COLOUR = '#C62828';
+const SHEET = '#F5F7F2';
 const NS = 'http://www.w3.org/2000/svg';
 
 type Attrs = Record<string, string | number>;
@@ -41,8 +46,26 @@ export function drawProfile(
   climb: Climb,
   slotSize: number,
 ): void {
-  const { dist, alt } = ride.samples;
+  const { dist, alt, hr } = ride.samples;
   svg.textContent = '';
+
+  let beatLo = Infinity;
+  let beatHi = -Infinity;
+  let beatCount = 0;
+  for (const b of hr) {
+    if (b == null) continue;
+    if (b < beatLo) beatLo = b;
+    if (b > beatHi) beatHi = b;
+    beatCount++;
+  }
+  const showHr = ride.hasHeartRate && beatCount > 1 && beatHi > beatLo;
+  const R = showHr ? R_WITH_HR : R_PLAIN;
+
+  // Heart rate gets its own scale across the same plot height, rounded out to
+  // tens so the right-hand ticks land on readable numbers.
+  const hrLo = showHr ? Math.floor(beatLo / 10) * 10 - 5 : 0;
+  const hrHi = showHr ? Math.ceil(beatHi / 10) * 10 + 5 : 1;
+  const syHr = (b: number) => H - B - ((b - hrLo) / (hrHi - hrLo)) * (H - B - T);
 
   const X1 = dist[ride.n - 1];
   const lo = Math.min(...alt);
@@ -106,6 +129,44 @@ export function drawProfile(
     el('path', { d: `M${pts.join(' L')}`, fill: 'none', stroke: '#1D2A2B', 'stroke-width': 1.6, 'stroke-linejoin': 'round' }),
   );
   svg.appendChild(el('line', { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: '#1D2A2B', 'stroke-width': 1 }));
+
+  if (showHr) {
+    // Break the trace wherever the strap dropped out, rather than drawing a
+    // straight line across a gap that was never recorded.
+    const runs: string[] = [];
+    let run: string[] = [];
+    for (let i = 0; i < ride.n; i++) {
+      const b = hr[i];
+      if (b == null) {
+        if (run.length > 1) runs.push(run.join(' L'));
+        run = [];
+        continue;
+      }
+      run.push(`${sx(dist[i]).toFixed(1)},${syHr(b).toFixed(1)}`);
+    }
+    if (run.length > 1) runs.push(run.join(' L'));
+
+    const trace = el('g');
+    for (const d of runs) {
+      // A paper-coloured halo underneath keeps the line legible where it
+      // crosses the darker gradient bands.
+      trace.appendChild(
+        el('path', { d: `M${d}`, fill: 'none', stroke: SHEET, 'stroke-width': 3.4, opacity: 0.85, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }),
+      );
+      trace.appendChild(
+        el('path', { d: `M${d}`, fill: 'none', stroke: HR_COLOUR, 'stroke-width': 1.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }),
+      );
+    }
+    svg.appendChild(trace);
+
+    for (let bpm = Math.ceil(hrLo / 20) * 20; bpm <= hrHi; bpm += 20) {
+      const y = syHr(bpm);
+      if (y < T || y > H - B) continue;
+      svg.appendChild(el('line', { x1: W - R, x2: W - R + 4, y1: y, y2: y, stroke: HR_COLOUR, 'stroke-width': 1, opacity: 0.65 }));
+      svg.appendChild(txt(W - R + 8, y + 4, bpm, { 'text-anchor': 'start', fill: HR_COLOUR }));
+    }
+    svg.appendChild(txt(W - R + 8, T - 10, 'bpm', { 'text-anchor': 'start', fill: HR_COLOUR }));
+  }
 
   const kmStep = X1 > 26000 ? 4000 : 2000;
   for (let d = 0; d <= X1; d += kmStep) {
@@ -195,9 +256,11 @@ export function drawProfile(
     tip.classList.add('on');
     tip.style.left = `${(sx(d) / W) * 100}%`;
     tip.style.top = `${(sy(a) / H) * bb.height}px`;
+    const bpm = showHr ? hrAt(ride.samples, d) : null;
     tip.innerHTML =
       `<b>${(d / 1000).toFixed(2)} km</b> · ${Math.round(a)} m<br>` +
-      (grade >= 0 ? `climbing ${grade.toFixed(1)}%` : `descending ${Math.abs(grade).toFixed(1)}%`);
+      (grade >= 0 ? `climbing ${grade.toFixed(1)}%` : `descending ${Math.abs(grade).toFixed(1)}%`) +
+      (bpm != null ? ` · ${bpm} bpm` : '');
   };
   const leave = () => {
     hover.setAttribute('opacity', '0');
