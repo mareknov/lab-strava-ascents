@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bike ascents in Slovakia</title>
+<meta name="description" content="Break a bike ride's climbs into fixed-length slots and see the gradient of each one. Upload your own GPX, TCX or FIT file — it never leaves your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23E6E9E1'/%3E%3Cpath d='M2 26 L12 9 L18 19 L22 14 L30 26 Z' fill='%231D2A2B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{CSS}}">
+</head>
+<body>
+<div class="wrap">
+
+<h1>Bike ascents in Slovakia</h1>
+<p class="standfirst">Six rides, each rebuilt from its own GPS track. Pick a ride, pick a climb, and split it into slots to see where the road actually hurt.</p>
+
+<div class="uploadbar">
+  <button type="button" class="upload-btn" id="uploadbtn">Add your own ride</button>
+  <span class="upload-note">GPX, TCX or FIT · read in your browser, never uploaded anywhere</span>
+  <input type="file" id="fileinput" accept=".gpx,.tcx,.fit,application/gpx+xml,application/octet-stream" multiple hidden>
+</div>
+<div class="dropzone" id="dropzone" hidden><span>Drop your ride here</span></div>
+<div class="notice" id="notice" hidden></div>
+
+<div class="tabs" id="tabs" role="tablist"></div>
+
+<p class="intro" id="intro"></p>
+<div class="figures" id="figures"></div>
+
+<h2>The shape of the ride</h2>
+<p class="lede">Colour marks the climb you have selected, shaded by how steep each slot is. The rest of the ride sits in grey. Move along the profile to read any point.</p>
+
+<div class="profile">
+  <svg id="chart" viewBox="0 0 1000 362" role="img" aria-label="Elevation profile"></svg>
+  <div class="tip" id="tip"></div>
+</div>
+
+<h2 id="climbhead">Slot by slot, up the climb</h2>
+<p class="lede">Split the climb into shorter or longer pieces. Bar length is the gradient of that slot.</p>
+
+<div class="climbpick" id="climbpick" role="group" aria-label="Choose a climb"></div>
+
+<div class="controls">
+  <span class="label" id="slotlabel">Slot length</span>
+  <div class="seg" role="group" aria-labelledby="slotlabel">
+    <button type="button" data-slot="250" aria-pressed="false">250 m</button>
+    <button type="button" data-slot="500" aria-pressed="true">500 m</button>
+    <button type="button" data-slot="1000" aria-pressed="false">1 km</button>
+  </div>
+</div>
+
+<div class="slots" id="slots"></div>
+
+<h2>How much of the climb was steep</h2>
+<p class="lede">Distance spent in each gradient band, measured in 250&nbsp;m pieces.</p>
+<div class="ladder" id="ladder"></div>
+<div class="key" id="key"></div>
+
+<footer id="foot"></footer>
+
+</div>
+<script type="module" src="{{JS}}"></script>
+</body>
+</html>

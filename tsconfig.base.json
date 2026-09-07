@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    // "Bundler" rather than "NodeNext": several dependencies (the Garmin FIT
+    // SDK among them) ship .d.ts files with extensionless relative imports,
+    // which NodeNext refuses to resolve. Emitted code is unaffected — every
+    // relative import in this repo is written with an explicit .js extension,
+    // so the output runs as plain Node ESM.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    // Deliberately off: the analysis is dense numeric array work where every
+    // index is bounds-guaranteed by its loop, and the flag would bury those
+    // algorithms in casts. Boundaries are validated with zod instead.
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
