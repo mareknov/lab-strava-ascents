@@ -4,9 +4,9 @@ A static page that takes a bike ride's GPS track and breaks its climbs into
 fixed-length slots, showing the gradient and heart rate of each one.
 
 Six curated rides ship with the page. Anyone can add their own with the **Add
-your own ride** button — GPX, TCX or FIT, parsed in the browser. Uploaded rides
-are appended alongside the curated ones, so you can read your climb against the
-same peaks rather than on its own.
+your own ride** button — GPX, TCX or FIT, parsed in the browser. Your rides sit at
+the front of the list, newest first, with the curated peaks alongside — so you
+can read your climb against the same roads rather than on its own.
 
 Nothing is uploaded anywhere. There is no server, no account and no analytics.
 Your file is read by the page and stays in your browser.
