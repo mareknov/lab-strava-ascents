@@ -1,0 +1,10 @@
+{
+  "name": "@ascents/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ascents/domain": "*",
+    "@ascents/ride-import": "*"
+  }
+}

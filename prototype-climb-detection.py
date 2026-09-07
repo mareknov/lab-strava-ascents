@@ -43,9 +43,44 @@ def total_ascent(alt):
     return sum(max(0, alt[i + 1] - alt[i]) for i in range(len(alt) - 1))
 
 
-if __name__ == "__main__":
+def ride_files():
+    """The stream files in rides/, skipping metadata.json and anything else
+    that is not four parallel arrays."""
     for path in sorted(pathlib.Path("rides").glob("*.json")):
         d = json.loads(path.read_text())
+        if "distance" in d and "altitude" in d:
+            yield path, d
+
+
+def report():
+    """Machine-readable form of the same numbers, for the parity test.
+
+    The printed table rounds for display, and Python rounds half-to-even while
+    JavaScript rounds half away from zero -- a 220.5 m gain prints as 220 here
+    and 221 there. Comparing raw values avoids that false mismatch.
+    """
+    out = {}
+    for path, d in ride_files():
+        dist, alt = d["distance"], d["altitude"]
+        out[path.stem] = {
+            "total_ascent": total_ascent(alt),
+            "climbs": [
+                {"i0": a, "i1": b, "d0": dist[a], "d1": dist[b],
+                 "a0": alt[a], "a1": alt[b]}
+                for a, b in detect(dist, alt)
+            ],
+        }
+    return out
+
+
+if __name__ == "__main__":
+    import sys
+
+    if "--json" in sys.argv:
+        print(json.dumps(report(), indent=1))
+        raise SystemExit(0)
+
+    for path, d in ride_files():
         dist, alt = d["distance"], d["altitude"]
         print(f"\n== {path.stem}  {dist[-1] / 1000:.1f} km, "
               f"{total_ascent(alt):.0f} m climbed")

@@ -1,0 +1,25 @@
+{
+  "name": "@ascents/ride-import",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./fit": {
+      "types": "./dist/adapters/fit.parser.d.ts",
+      "default": "./dist/adapters/fit.parser.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "files": ["dist"],
+  "dependencies": {
+    "@ascents/domain": "*",
+    "@garmin/fitsdk": "^21.171.0",
+    "fast-xml-parser": "^5.0.0",
+    "zod": "^4.0.0"
+  }
+}
