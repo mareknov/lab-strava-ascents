@@ -32,6 +32,47 @@ export function altAt(s: RideSamples, x: number): number {
 }
 
 /**
+ * Heart rate at the sample nearest a distance, for reading a single point.
+ *
+ * Walks outwards from the nearest sample because heart rate is the channel
+ * most likely to have gaps — a strap drops out mid-ride far more often than
+ * GPS does. Returns null when nothing within `window` metres carries a reading.
+ */
+export function hrAt(s: RideSamples, x: number, window = 250): number | null {
+  const { dist, hr } = s;
+  const n = dist.length;
+  if (n === 0) return null;
+
+  let lo = 0;
+  let hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (dist[mid] <= x) lo = mid;
+    else hi = mid;
+  }
+
+  // Walk outwards from the two samples bracketing x, always taking whichever
+  // side is nearer. Once the nearer of the two is beyond the window, so is
+  // everything left, and there is nothing worth reporting.
+  let before = lo;
+  let after = lo + 1;
+  while (before >= 0 || after < n) {
+    const dBefore = before >= 0 ? Math.abs(dist[before] - x) : Infinity;
+    const dAfter = after < n ? Math.abs(dist[after] - x) : Infinity;
+    if (Math.min(dBefore, dAfter) > window) break;
+
+    if (dBefore <= dAfter) {
+      if (hr[before] != null) return hr[before];
+      before--;
+    } else {
+      if (hr[after] != null) return hr[after];
+      after++;
+    }
+  }
+  return null;
+}
+
+/**
  * Mean heart rate over the sample points falling inside [a, b].
  *
  * Approximate by nature: it averages whatever points land in the window rather
