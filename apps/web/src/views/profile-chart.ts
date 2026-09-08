@@ -11,6 +11,13 @@ const B = 30;
 
 const HR_COLOUR = '#C62828';
 const SHEET = '#F5F7F2';
+
+/**
+ * Share of the plot height given to the heart-rate lane, along the bottom.
+ * Across the full height the trace weaves through the elevation line and the
+ * two are hard to tell apart; kept low it reads as its own band.
+ */
+const HR_BAND = 0.25;
 const NS = 'http://www.w3.org/2000/svg';
 
 type Attrs = Record<string, string | number>;
@@ -61,11 +68,13 @@ export function drawProfile(
   const showHr = ride.hasHeartRate && beatCount > 1 && beatHi > beatLo;
   const R = showHr ? R_WITH_HR : R_PLAIN;
 
-  // Heart rate gets its own scale across the same plot height, rounded out to
-  // tens so the right-hand ticks land on readable numbers.
+  // Heart rate has its own scale, rounded out to tens so the right-hand ticks
+  // land on readable numbers, and occupies only the bottom band of the plot.
   const hrLo = showHr ? Math.floor(beatLo / 10) * 10 - 5 : 0;
   const hrHi = showHr ? Math.ceil(beatHi / 10) * 10 + 5 : 1;
-  const syHr = (b: number) => H - B - ((b - hrLo) / (hrHi - hrLo)) * (H - B - T);
+  const hrBandHeight = (H - B - T) * HR_BAND;
+  const hrBandTop = H - B - hrBandHeight;
+  const syHr = (b: number) => H - B - ((b - hrLo) / (hrHi - hrLo)) * hrBandHeight;
 
   const X1 = dist[ride.n - 1];
   const lo = Math.min(...alt);
@@ -159,13 +168,16 @@ export function drawProfile(
     }
     svg.appendChild(trace);
 
-    for (let bpm = Math.ceil(hrLo / 20) * 20; bpm <= hrHi; bpm += 20) {
+    // The band is only a quarter of the height, so pick a step coarse enough
+    // that the labels do not collide.
+    const hrStep = [20, 40, 50, 100].find((step) => (hrHi - hrLo) / step <= 3) ?? 100;
+    for (let bpm = Math.ceil(hrLo / hrStep) * hrStep; bpm <= hrHi; bpm += hrStep) {
       const y = syHr(bpm);
-      if (y < T || y > H - B) continue;
+      if (y < hrBandTop || y > H - B) continue;
       svg.appendChild(el('line', { x1: W - R, x2: W - R + 4, y1: y, y2: y, stroke: HR_COLOUR, 'stroke-width': 1, opacity: 0.65 }));
       svg.appendChild(txt(W - R + 8, y + 4, bpm, { 'text-anchor': 'start', fill: HR_COLOUR }));
     }
-    svg.appendChild(txt(W - R + 8, T - 10, 'bpm', { 'text-anchor': 'start', fill: HR_COLOUR }));
+    svg.appendChild(txt(W - R + 8, hrBandTop - 5, 'bpm', { 'text-anchor': 'start', fill: HR_COLOUR }));
   }
 
   const kmStep = X1 > 26000 ? 4000 : 2000;
