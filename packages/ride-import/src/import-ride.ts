@@ -1,5 +1,6 @@
 import {
   analyseRide,
+  bridgeHeartRateGaps,
   gatedAscent,
   movingTime as deriveMovingTime,
   resampleUniform,
@@ -127,7 +128,12 @@ export async function importRide(
   const ascent = track.meta.ascent ?? gatedAscent(raw.alt);
   const movingTime = track.meta.movingTime ?? (track.meta.hasTime ? deriveMovingTime(raw.dist, raw.time) : 0);
 
-  const samples = resampleUniform(raw);
+  // Bridge the holes a low heart-rate logging rate leaves behind, before
+  // resampling. Without this the channel is mostly null on devices that log
+  // heart rate every few seconds against 1 Hz position, and the trace draws
+  // as disconnected fragments. Real dropouts stay as breaks.
+  const bridged: RideSamples = { ...raw, hr: bridgeHeartRateGaps(raw.hr, raw.time) };
+  const samples = resampleUniform(bridged);
   const highPoint = Math.round(Math.max(...samples.alt));
   const date = formatDate(track.meta.startTime);
 

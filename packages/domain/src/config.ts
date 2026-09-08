@@ -36,5 +36,22 @@ export const RESAMPLE_MAX_POINTS = 2500;
  */
 export const ASCENT_NOISE_GATE_M = 1;
 
+/**
+ * Longest silence in the heart-rate stream that is bridged rather than shown
+ * as a break.
+ *
+ * Devices commonly log heart rate far less often than position — one reading
+ * every five to ten seconds against 1 Hz for GPS — which leaves the channel
+ * mostly empty even though the sensor was working fine. Anything longer than
+ * this is treated as the sensor genuinely dropping out, and stays a gap.
+ *
+ * A minute is where the two separate on real files: on a sample ride logging
+ * heart rate every 5 s (median gap 5 s, p90 9 s), raising the limit from 30 s
+ * to 60 s removed seven breaks, while 60 s to 90 s removed none — no gap in
+ * that ride falls between the two. What remains past a minute is a handful of
+ * multi-minute outages, which are worth showing rather than papering over.
+ */
+export const HR_MAX_BRIDGE_S = 60;
+
 /** Below this speed the rider is not considered to be pedalling. */
 export const MOVING_SPEED_MIN_MPS = 0.8;

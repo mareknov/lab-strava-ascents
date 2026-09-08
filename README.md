@@ -59,9 +59,24 @@ an uploaded file:
   along the bottom quarter of the plot, on its own right-hand axis. It is kept
   to a band because across the full height it weaves through the elevation line
   and the two become hard to tell apart. It carries a paper-coloured halo so it
-  stays legible over the darker gradient bands, and breaks wherever the strap
-  dropped out rather than bridging a gap that was never recorded. Rides without
-  heart rate lose the line, the axis and the bpm column entirely.
+  stays legible over the darker gradient bands. Rides without heart rate lose
+  the line, the axis and the bpm column entirely.
+
+### Heart rate is bridged before it is resampled
+
+Devices routinely log heart rate far less often than position — one reading
+every five to ten seconds against 1 Hz for GPS. Left alone, the channel is
+mostly empty, the holes survive resampling, and the trace draws as dozens of
+disconnected specks. On a real 90-minute ride only 802 of 5330 records carried
+a reading, and the line came out as 28 fragments.
+
+So silences up to 60 seconds are interpolated across, and anything longer stays
+a gap. That threshold is where the two separate on real files: on the same ride
+(median gap 5 s, p90 9 s) raising it from 30 s to 60 s removed seven breaks,
+while 60 s to 90 s removed none — nothing falls in between. What remains past a
+minute is a handful of multi-minute outages, worth showing rather than papering
+over. Runs too short to read as a line are dropped at draw time for the same
+reason: stranded inside a dropout they look like noise, not data.
 
 ### Two things happen in a deliberate order
 

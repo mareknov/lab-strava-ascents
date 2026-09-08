@@ -140,20 +140,26 @@ export function drawProfile(
   svg.appendChild(el('line', { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: '#1D2A2B', 'stroke-width': 1 }));
 
   if (showHr) {
-    // Break the trace wherever the strap dropped out, rather than drawing a
-    // straight line across a gap that was never recorded.
+    // Break the trace wherever the sensor dropped out, rather than drawing a
+    // straight line across a gap that was never recorded. Runs too short to
+    // read as a line are dropped instead: stranded inside a dropout they look
+    // like specks of noise, not data. The tooltip still reports their values.
+    const MIN_RUN_POINTS = 3;
     const runs: string[] = [];
     let run: string[] = [];
+    const flush = () => {
+      if (run.length >= MIN_RUN_POINTS) runs.push(run.join(' L'));
+      run = [];
+    };
     for (let i = 0; i < ride.n; i++) {
       const b = hr[i];
       if (b == null) {
-        if (run.length > 1) runs.push(run.join(' L'));
-        run = [];
+        flush();
         continue;
       }
       run.push(`${sx(dist[i]).toFixed(1)},${syHr(b).toFixed(1)}`);
     }
-    if (run.length > 1) runs.push(run.join(' L'));
+    flush();
 
     const trace = el('g');
     for (const d of runs) {
